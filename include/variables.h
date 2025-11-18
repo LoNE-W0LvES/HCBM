@@ -17,6 +17,12 @@ extern float lower_hum_threshold;
 extern float lower_temp;
 extern float lower_hum;
 
+// Calculated thresholds (ambient-aware)
+extern float calculated_upper_temp;
+extern float calculated_lower_temp;
+extern float calculated_upper_hum;
+extern float calculated_lower_hum;
+
 // Config
 extern int mode;              // 1=Auto, 2=Manual, 3=Timer
 extern String priority;       // "Temperature" or "Humidity"

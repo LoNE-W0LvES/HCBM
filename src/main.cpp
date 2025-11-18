@@ -18,6 +18,13 @@ float upper_temp_threshold = 35, lower_temp_threshold = 25;
 float upper_hum_threshold = 75, lower_hum_threshold = 45;
 
 float lower_temp = 25, lower_hum = 45;
+
+// Calculated thresholds (ambient-aware)
+float calculated_upper_temp = 35;
+float calculated_lower_temp = 25;
+float calculated_upper_hum = 75;
+float calculated_lower_hum = 45;
+
 int mode = 1;
 String priority = "Temperature";
 int timer_value = 10;
@@ -149,9 +156,34 @@ void loop() {
     readSensors();
     lastSensorRead = currentMillis;
 
-    // Use configured thresholds directly (no tolerance calculation)
+    // Use configured thresholds directly
     lower_temp = lower_temp_threshold;
     lower_hum = lower_hum_threshold;
+
+    // Calculate ambient-aware thresholds for control and display
+    const float MIN_TEMP_GAP = 1.5;  // Minimum 1.5°C gap for temperature
+    const float MIN_HUM_GAP = 3.0;   // Minimum 3% gap for humidity
+
+    // Upper thresholds stay the same
+    calculated_upper_temp = upper_temp_threshold;
+    calculated_upper_hum = upper_hum_threshold;
+
+    // Lower thresholds consider ambient temperature
+    float temp_lower_candidate = max(lower_temp_threshold, ambient_temp);
+    float hum_lower_candidate = max(lower_hum_threshold, ambient_hum);
+
+    // Ensure minimum gap is maintained
+    if (calculated_upper_temp - temp_lower_candidate < MIN_TEMP_GAP) {
+      calculated_lower_temp = calculated_upper_temp - MIN_TEMP_GAP;
+    } else {
+      calculated_lower_temp = temp_lower_candidate;
+    }
+
+    if (calculated_upper_hum - hum_lower_candidate < MIN_HUM_GAP) {
+      calculated_lower_hum = calculated_upper_hum - MIN_HUM_GAP;
+    } else {
+      calculated_lower_hum = hum_lower_candidate;
+    }
 
     postSensorEvent();
   }

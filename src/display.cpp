@@ -96,22 +96,29 @@ void showRealtimeData() {
   display.setTextColor(SSD1306_WHITE);
   display.setTextSize(1);
 
-  // --- TOP LINE: depends on mode ---
+  // --- TOP LINES: depends on mode ---
   if (mode == 1) {  // Auto
+    // Show configured thresholds (no decimals to save space)
     display.setCursor(0, 0);
-    display.printf("T:%.1f-%.1fC H:%.0f-%.0f%%",
-                   lower_temp_threshold, upper_temp_threshold,
-                   lower_hum_threshold, upper_hum_threshold);
+    display.printf("T:%d-%dC H:%d-%d%%",
+                   (int)lower_temp_threshold, (int)upper_temp_threshold,
+                   (int)lower_hum_threshold, (int)upper_hum_threshold);
+
+    // Show calculated thresholds (ambient-aware)
+    display.setCursor(0, 9);
+    display.printf("NT:%d-%dC NH:%d-%d%%",
+                   (int)calculated_lower_temp, (int)calculated_upper_temp,
+                   (int)calculated_lower_hum, (int)calculated_upper_hum);
   }
   else if (mode == 3) {  // Timer mode
     unsigned long elapsedSec = (millis() - coolerTimerStart) / 1000UL;
     unsigned long totalSec = timer_value * 60UL;
     unsigned long remainingSec = (elapsedSec < totalSec) ? (totalSec - elapsedSec) : 0;
-    
+
     int hh = remainingSec / 3600;
     int mm = (remainingSec % 3600) / 60;
     int ss = remainingSec % 60;
-    
+
     display.setCursor(0, 0);
     display.printf("Rem: %02d:%02d:%02d", hh, mm, ss);
   }
@@ -122,7 +129,7 @@ void showRealtimeData() {
   }
 
   // --- Mode & Priority ---
-  display.setCursor(0, 12);
+  display.setCursor(0, 19);
   if (mode == 3) {
     display.printf("Mode:TIMER  %s\n", relay_state ? "ON " : "OFF");
   } else if (mode == 1) {
@@ -136,15 +143,15 @@ void showRealtimeData() {
 
 
   // --- Internal conditions ---
-  display.setCursor(0, 22);
-  display.printf("Int T:%.1fC H:%.0f%%", internal_temp, internal_hum);
+  display.setCursor(0, 30);
+  display.printf("Int T:%dC H:%d%%", (int)internal_temp, (int)internal_hum);
 
   // --- Ambient conditions ---
-  display.setCursor(0, 34);
-  display.printf("Amb T:%.1fC H:%.0f%%", ambient_temp, ambient_hum);
+  display.setCursor(0, 40);
+  display.printf("Amb T:%dC H:%d%%", (int)ambient_temp, (int)ambient_hum);
 
   // --- Bottom indicator ---
-  display.setCursor(0, 46);
+  display.setCursor(0, 52);
   // Show protection status in Auto/Timer modes
   extern bool isProtectionActive();
   extern unsigned long getProtectionRemaining();
