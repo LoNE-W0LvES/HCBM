@@ -635,20 +635,6 @@ body {
       </div>
 
       <div class="section">
-        <h3 id="tolTitle">Tolerance Settings</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label id="lblTempTol">Temp Tolerance (°C)</label>
-            <input type="number" step="0.5" id="tempTol" required>
-          </div>
-          <div class="form-group">
-            <label id="lblHumTol">Humidity Tolerance (%)</label>
-            <input type="number" step="1" id="humTol" required>
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
         <h3 id="timerTitle">Timer Settings</h3>
         <div class="form-group">
           <label id="lblTimerMin">Timer Interval (minutes)</label>
@@ -678,9 +664,6 @@ const translations = {
     humTitle: 'Humidity Thresholds',
     lblUpperHum: 'Upper Humidity (%)',
     lblLowerHum: 'Lower Humidity (%)',
-    tolTitle: 'Tolerance Settings',
-    lblTempTol: 'Temp Tolerance (°C)',
-    lblHumTol: 'Humidity Tolerance (%)',
     timerTitle: 'Timer Settings',
     lblTimerMin: 'Timer Interval (minutes)',
     btnSave: '💾 Save Configuration',
@@ -696,9 +679,6 @@ const translations = {
     humTitle: 'আর্দ্রতার সীমা',
     lblUpperHum: 'উচ্চ আর্দ্রতা (%)',
     lblLowerHum: 'নিম্ন আর্দ্রতা (%)',
-    tolTitle: 'সহনশীলতা সেটিংস',
-    lblTempTol: 'তাপমাত্রা সহনশীলতা (°সে)',
-    lblHumTol: 'আর্দ্রতা সহনশীলতা (%)',
     timerTitle: 'টাইমার সেটিংস',
     lblTimerMin: 'টাইমার ব্যবধান (মিনিট)',
     btnSave: '💾 কনফিগারেশন সংরক্ষণ',
@@ -729,8 +709,6 @@ async function loadConfig() {
     document.getElementById('lowerT').value = d.lower_temp_threshold;
     document.getElementById('upperH').value = d.upper_hum_threshold;
     document.getElementById('lowerH').value = d.lower_hum_threshold;
-    document.getElementById('tempTol').value = d.temp_tolerance || 2.0;
-    document.getElementById('humTol').value = d.hum_tolerance || 5.0;
     document.getElementById('timerCfg').value = d.timer_value;
   } catch(e) {
     console.error('Load error:', e);
@@ -745,8 +723,6 @@ document.getElementById('configForm').addEventListener('submit', async (e) => {
     lower_temp_threshold: parseFloat(lowerT.value),
     upper_hum_threshold: parseFloat(upperH.value),
     lower_hum_threshold: parseFloat(lowerH.value),
-    temp_tolerance: parseFloat(tempTol.value),
-    hum_tolerance: parseFloat(humTol.value),
     timer_value: parseInt(timerCfg.value)
   };
   
@@ -807,8 +783,6 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
       <div class="threshold-info" id="thresholdInfo">
         <div class="info-row"><span class="label" id="lblThreshTemp">Temp Thresholds:</span><span class="value" id="threshTemp">--</span></div>
         <div class="info-row"><span class="label" id="lblThreshHum">Hum Thresholds:</span><span class="value" id="threshHum">--</span></div>
-        <div class="info-row"><span class="label" id="lblTolTemp">Temp Tolerance:</span><span class="value" id="tolTemp">--</span></div>
-        <div class="info-row"><span class="label" id="lblTolHum">Hum Tolerance:</span><span class="value" id="tolHum">--</span></div>
         <div class="info-row" id="timerRow" style="display:none"><span class="label" id="lblTimerInterval">Timer Interval:</span><span class="value" id="timerInterval">--</span></div>
       </div>
     </div>
@@ -827,11 +801,11 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
 </div>
 <script>
 let ws,data={},lang='%LANG%';
-const tr={en:{title:'Smart Cooler',status:'Online',sensorTitle:'Sensor Readings',lblAmbTemp:'Ambient Temp',lblAmbHum:'Ambient Humidity',lblIntTemp:'Internal Temp',lblIntHum:'Internal Humidity',lblThreshTemp:'Temp Thresholds:',lblThreshHum:'Hum Thresholds:',lblTolTemp:'Temp Tolerance:',lblTolHum:'Hum Tolerance:',lblTimerInterval:'Timer Interval:',controlTitle:'Control Panel',lblMode:'Mode',lblPriority:'Priority',relayOn:'Relay ON',relayOff:'Relay OFF',lblTimer:'Timer',lblInterval:'Interval:',lblMin:'min',configText:'Config',wifiText:'WiFi'},bn:{title:'স্মার্ট ক্লার',status:'অনলাইন',sensorTitle:'সেন্সর রিডিং',lblAmbTemp:'পরিবেশের তাপমাত্রা',lblAmbHum:'পরিবেশের আর্দ্রতা',lblIntTemp:'অভ্যন্তরীণ তাপমাত্রা',lblIntHum:'অভ্যন্তরীণ আর্দ্রতা',lblThreshTemp:'তাপমাত্রা সীমা:',lblThreshHum:'আর্দ্রতা সীমা:',lblTolTemp:'তাপমাত্রা সহনশীলতা:',lblTolHum:'আর্দ্রতা সহনশীলতা:',lblTimerInterval:'টাইমার ব্যবধান:',controlTitle:'নিয়ন্ত্রণ প্যানেল',lblMode:'মোড',lblPriority:'অগ্রাধিকার',relayOn:'রিলে চালু',relayOff:'রিলে বন্ধ',lblTimer:'টাইমার',lblInterval:'ব্যবধান:',lblMin:'মিনিট',configText:'কনফিগারেশন',wifiText:'ওয়াই-ফাই'}};
+const tr={en:{title:'Smart Cooler',status:'Online',sensorTitle:'Sensor Readings',lblAmbTemp:'Ambient Temp',lblAmbHum:'Ambient Humidity',lblIntTemp:'Internal Temp',lblIntHum:'Internal Humidity',lblThreshTemp:'Temp Thresholds:',lblThreshHum:'Hum Thresholds:',lblTimerInterval:'Timer Interval:',controlTitle:'Control Panel',lblMode:'Mode',lblPriority:'Priority',relayOn:'Relay ON',relayOff:'Relay OFF',lblTimer:'Timer',lblInterval:'Interval:',lblMin:'min',configText:'Config',wifiText:'WiFi'},bn:{title:'স্মার্ট ক্লার',status:'অনলাইন',sensorTitle:'সেন্সর রিডিং',lblAmbTemp:'পরিবেশের তাপমাত্রা',lblAmbHum:'পরিবেশের আর্দ্রতা',lblIntTemp:'অভ্যন্তরীণ তাপমাত্রা',lblIntHum:'অভ্যন্তরীণ আর্দ্রতা',lblThreshTemp:'তাপমাত্রা সীমা:',lblThreshHum:'আর্দ্রতা সীমা:',lblTimerInterval:'টাইমার ব্যবধান:',controlTitle:'নিয়ন্ত্রণ প্যানেল',lblMode:'মোড',lblPriority:'অগ্রাধিকার',relayOn:'রিলে চালু',relayOff:'রিলে বন্ধ',lblTimer:'টাইমার',lblInterval:'ব্যবধান:',lblMin:'মিনিট',configText:'কনফিগারেশন',wifiText:'ওয়াই-ফাই'}};
 function toBangla(n){if(lang!=='bn')return n.toString();const d=['০','১','২','৩','৪','৫','৬','৭','৮','৯'];return n.toString().split('').map(c=>c>='0'&&c<='9'?d[parseInt(c)]:c).join('')}
 function setLang(l){lang=l;document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');fetch(`/setlang?lang=${l}`);Object.keys(tr[lang]).forEach(k=>{const e=document.getElementById(k);if(e)e.textContent=tr[lang][k]});document.querySelectorAll('option').forEach(o=>{if(o.dataset[lang])o.textContent=o.dataset[lang]});updateRelayText();updateThresholdDisplay()}
 function conn(){ws=new WebSocket(`ws://${location.host}/ws`);ws.onopen=()=>{document.getElementById('status').textContent=tr[lang].status;document.getElementById('stat').className='status-badge status-online'};ws.onclose=()=>{document.getElementById('status').textContent='Offline';document.getElementById('stat').className='status-badge status-offline';setTimeout(conn,3000)};ws.onmessage=(e)=>{data=JSON.parse(e.data);update()}}
-function updateThresholdDisplay(){document.getElementById('threshTemp').textContent=toBangla(data.lower_temp_threshold?.toFixed(1)||'--')+' - '+toBangla(data.upper_temp_threshold?.toFixed(1)||'--')+'°C';document.getElementById('threshHum').textContent=toBangla(data.lower_hum_threshold?.toFixed(0)||'--')+' - '+toBangla(data.upper_hum_threshold?.toFixed(0)||'--')+'%';document.getElementById('tolTemp').textContent=toBangla(data.temp_tolerance?.toFixed(1)||'--')+'°C';document.getElementById('tolHum').textContent=toBangla(data.hum_tolerance?.toFixed(0)||'--')+'%';const timerRow=document.getElementById('timerRow');if(data.mode==3){timerRow.style.display='flex';document.getElementById('timerInterval').textContent=toBangla(data.timer_value||'--')+' '+(lang=='bn'?'মিনিট':'min')}else{timerRow.style.display='none'}}
+function updateThresholdDisplay(){document.getElementById('threshTemp').textContent=toBangla(data.lower_temp_threshold?.toFixed(1)||'--')+' - '+toBangla(data.upper_temp_threshold?.toFixed(1)||'--')+'°C';document.getElementById('threshHum').textContent=toBangla(data.lower_hum_threshold?.toFixed(0)||'--')+' - '+toBangla(data.upper_hum_threshold?.toFixed(0)||'--')+'%';const timerRow=document.getElementById('timerRow');if(data.mode==3){timerRow.style.display='flex';document.getElementById('timerInterval').textContent=toBangla(data.timer_value||'--')+' '+(lang=='bn'?'মিনিট':'min')}else{timerRow.style.display='none'}}
 function update(){document.getElementById('ambT').textContent=toBangla(data.ambient_temp_rt.toFixed(1));document.getElementById('intT').textContent=toBangla(data.temp_rt.toFixed(1));document.getElementById('ambH').textContent=toBangla(data.ambient_hum_rt.toFixed(0));document.getElementById('intH').textContent=toBangla(data.hum_rt.toFixed(0));document.getElementById('mode').value=data.mode;document.getElementById('prio').value=data.priority;document.getElementById('prioRow').style.display=data.mode==1?'flex':'none';updateThresholdDisplay();updateRelayText();if(data.mode==3){document.getElementById('timer').style.display='block';document.getElementById('interval').textContent=toBangla(data.timer_value);const s=data.timer_elapsed,t=data.timer_value*60,r=(s<t)?(t-s):0,h=String(Math.floor(r/3600)).padStart(2,'0'),m=String(Math.floor((r%3600)/60)).padStart(2,'0'),ss=String(r%60).padStart(2,'0');document.getElementById('time').textContent=toBangla(`${h}:${m}:${ss}`)}else{document.getElementById('timer').style.display='none'}}
 function updateRelayText(){document.getElementById('relayTxt').textContent=data.relay_state?tr[lang].relayOn:tr[lang].relayOff;document.getElementById('relay').className=data.relay_state?'btn btn-relay on':'btn btn-relay'}
 async function toggle(){await fetch(`/relay?state=${data.relay_state?0:1}`)}

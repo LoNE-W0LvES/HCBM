@@ -55,8 +55,6 @@ void sendDataUpdate() {
   doc["lower_temp_threshold"] = lower_temp_threshold;
   doc["upper_hum_threshold"]  = upper_hum_threshold;
   doc["lower_hum_threshold"]  = lower_hum_threshold;
-  doc["temp_tolerance"] = temp_tolerance;
-  doc["hum_tolerance"] = hum_tolerance;
   doc["protection_active"]    = isProtectionActive();
   doc["protection_remaining"] = getProtectionRemaining();
   
@@ -249,8 +247,6 @@ void startWebServer() {
     doc["lower_temp_threshold"] = lower_temp_threshold;
     doc["upper_hum_threshold"]  = upper_hum_threshold;
     doc["lower_hum_threshold"]  = lower_hum_threshold;
-    doc["temp_tolerance"] = temp_tolerance;
-    doc["hum_tolerance"] = hum_tolerance;
     doc["protection_active"]    = isProtectionActive();
     doc["protection_remaining"] = getProtectionRemaining();
     
@@ -377,17 +373,15 @@ void startWebServer() {
     upper_hum_threshold  = doc["upper_hum_threshold"];
     lower_hum_threshold  = doc["lower_hum_threshold"];
     timer_value          = doc["timer_value"];
-    temp_tolerance       = doc["temp_tolerance"];
-    hum_tolerance        = doc["hum_tolerance"];
-    
+
     saveConfiguration();
     postThresholdsEvent();
-    
+
     DEBUG_PRINTLN("[WEB] Configuration saved to flash.");
-    DEBUG_PRINTF("  Temp: %.1f - %.1f°C (Tol: %.1f°C)\n", 
-                  lower_temp_threshold, upper_temp_threshold, temp_tolerance);
-    DEBUG_PRINTF("  Hum: %.0f - %.0f%% (Tol: %.0f%%)\n", 
-                  lower_hum_threshold, upper_hum_threshold, hum_tolerance);
+    DEBUG_PRINTF("  Temp: %.1f - %.1f°C\n",
+                  lower_temp_threshold, upper_temp_threshold);
+    DEBUG_PRINTF("  Hum: %.0f - %.0f%%\n",
+                  lower_hum_threshold, upper_hum_threshold);
     DEBUG_PRINTF("  Timer: %d min\n", timer_value);
     
     req->send(200, "text/plain", "Saved");

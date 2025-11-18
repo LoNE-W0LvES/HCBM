@@ -68,14 +68,17 @@ void resetStableTimer() {
   isStable = false;
 }
 
-// Check if internal temp is within ambient + tolerance
-bool isWithinTolerance() {
+// Check if internal is within ambient (cooling ineffective)
+bool isWithinAmbient() {
   float tempDiff = internal_temp - ambient_temp;
   float humDiff = internal_hum - ambient_hum;
-  
-  bool tempOK = (tempDiff <= temp_tolerance);
-  bool humOK = (humDiff <= hum_tolerance);
-  
+
+  const float TEMP_MARGIN = 1.0;  // 1°C margin
+  const float HUM_MARGIN = 2.0;   // 2% margin
+
+  bool tempOK = (tempDiff <= TEMP_MARGIN);
+  bool humOK = (humDiff <= HUM_MARGIN);
+
   if (priority == "Temperature") {
     return tempOK;
   } else if (priority == "Humidity") {
@@ -106,16 +109,15 @@ void updateControl() {
 #endif
 
 #if ENABLE_AUTO_OFF_STABLE
-  // Auto-off logic - Check if within tolerance for extended period
+  // Auto-off logic - Check if within ambient for extended period (cooling ineffective)
   if (relay_state && mode == 1) {  // Only in Auto mode when relay is ON
-    if (isWithinTolerance()) {
+    if (isWithinAmbient()) {
       if (!isStable) {
         // Just became stable
         isStable = true;
         stableStartTime = millis();
-        DEBUG_PRINTF("[AUTO-OFF] Stable conditions detected (Int:%.1f°C/%.0f%% vs Amb:%.1f°C/%.0f%% + Tol:%.1f°C/%.0f%%)\n",
-                     internal_temp, internal_hum, ambient_temp, ambient_hum,
-                     temp_tolerance, hum_tolerance);
+        DEBUG_PRINTF("[AUTO-OFF] Stable conditions detected (Int:%.1f°C/%.0f%% vs Amb:%.1f°C/%.0f%%)\n",
+                     internal_temp, internal_hum, ambient_temp, ambient_hum);
       } else {
         // Check if stable for long enough
         unsigned long stableDuration = millis() - stableStartTime;
@@ -207,37 +209,68 @@ void updateControl() {
   // 🧠 Mode-specific control logic
   // ===================================================
 
-  // AUTO MODE – hysteresis control
+  // AUTO MODE – hysteresis control with ambient consideration
   if (mode == 1) {
+    const float MIN_HYSTERESIS_GAP = 1.5;  // Minimum gap to prevent cycling
+
     if (relay_state) {
-      // Currently ON: Check if should turn OFF
+      // Currently ON: Turn OFF when internal <= MAX(lower_temp, ambient)
       if (priority == "Temperature") {
-        relay_on = (internal_temp > lower_temp);
+        float effective_lower = max(lower_temp, ambient_temp);
+        relay_on = (internal_temp > effective_lower);
       } else if (priority == "Humidity") {
-        relay_on = (internal_hum > lower_hum);
+        float effective_lower = max(lower_hum, ambient_hum);
+        relay_on = (internal_hum > effective_lower);
       } else { // Both
-        relay_on = (internal_temp > lower_temp) || 
-                   (internal_hum > lower_hum);
+        float effective_lower_temp = max(lower_temp, ambient_temp);
+        float effective_lower_hum = max(lower_hum, ambient_hum);
+        relay_on = (internal_temp > effective_lower_temp) ||
+                   (internal_hum > effective_lower_hum);
       }
     } else {
       // Currently OFF: Check if should turn ON
-      bool shouldTurnOn = false;
+      bool canTurnOn = false;
+
 #if ENABLE_COMPRESSOR_PROTECTION
       if (!compressorProtectionActive) {
-        shouldTurnOn = true;
+        canTurnOn = true;
       }
 #else
-      shouldTurnOn = true;
+      canTurnOn = true;
 #endif
-      
-      if (shouldTurnOn) {
+
+      if (canTurnOn) {
         if (priority == "Temperature") {
-          relay_on = (internal_temp > upper_temp_threshold);
+          // Check if ambient or lower_temp is too close to upper threshold
+          float max_lower = max(lower_temp, ambient_temp);
+          bool gapOK = (upper_temp_threshold - max_lower >= MIN_HYSTERESIS_GAP);
+
+          if (!gapOK) {
+            DEBUG_PRINTF("[CONTROL] Turn ON blocked - insufficient gap (upper:%.1f°C, max_lower:%.1f°C, gap:%.1f°C)\n",
+                         upper_temp_threshold, max_lower, upper_temp_threshold - max_lower);
+          }
+
+          relay_on = (internal_temp > upper_temp_threshold) && gapOK;
         } else if (priority == "Humidity") {
-          relay_on = (internal_hum > upper_hum_threshold);
+          float max_lower = max(lower_hum, ambient_hum);
+          bool gapOK = (upper_hum_threshold - max_lower >= MIN_HYSTERESIS_GAP);
+
+          if (!gapOK) {
+            DEBUG_PRINTF("[CONTROL] Turn ON blocked - insufficient gap (upper:%.0f%%, max_lower:%.0f%%, gap:%.0f%%)\n",
+                         upper_hum_threshold, max_lower, upper_hum_threshold - max_lower);
+          }
+
+          relay_on = (internal_hum > upper_hum_threshold) && gapOK;
         } else { // Both
-          relay_on = (internal_temp > upper_temp_threshold) || 
-                     (internal_hum > upper_hum_threshold);
+          float max_lower_temp = max(lower_temp, ambient_temp);
+          float max_lower_hum = max(lower_hum, ambient_hum);
+          bool gapTempOK = (upper_temp_threshold - max_lower_temp >= MIN_HYSTERESIS_GAP);
+          bool gapHumOK = (upper_hum_threshold - max_lower_hum >= MIN_HYSTERESIS_GAP);
+
+          bool canTurnOnTemp = (internal_temp > upper_temp_threshold) && gapTempOK;
+          bool canTurnOnHum = (internal_hum > upper_hum_threshold) && gapHumOK;
+
+          relay_on = canTurnOnTemp || canTurnOnHum;
         }
       }
     }

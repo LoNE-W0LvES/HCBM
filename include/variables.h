@@ -13,11 +13,7 @@ extern float lower_temp_threshold;
 extern float upper_hum_threshold;
 extern float lower_hum_threshold;
 
-// NEW: Tolerance settings
-extern float temp_tolerance;  // Temperature tolerance (°C)
-extern float hum_tolerance;   // Humidity tolerance (%)
-
-// Actual lower limits (adjusted based on ambient + tolerance)
+// Actual lower limits
 extern float lower_temp;
 extern float lower_hum;
 

@@ -249,14 +249,14 @@ void handleButtons() {
 
     if (pressed(BTN_TOP)) {
       currentParam--;
-      if (currentParam < 0) currentParam = 6;  // 0-6 = 7 parameters
+      if (currentParam < 0) currentParam = 4;  // 0-4 = 5 parameters
       needsRedraw = true;
       postButtonEvent(BTN_TOP);
     }
 
     if (pressed(BTN_BOTTOM)) {
       currentParam++;
-      if (currentParam > 6) currentParam = 0;  // 0-6 = 7 parameters
+      if (currentParam > 4) currentParam = 0;  // 0-4 = 5 parameters
       needsRedraw = true;
       postButtonEvent(BTN_BOTTOM);
     }
@@ -268,8 +268,6 @@ void handleButtons() {
         case 2: upper_hum_threshold -= 1; break;
         case 3: lower_hum_threshold -= 1; break;
         case 4: timer_value = max(1, timer_value - 1); break;
-        case 5: temp_tolerance = max(0.0f, temp_tolerance - 0.5f); break;
-        case 6: hum_tolerance = max(0.0f, hum_tolerance - 1.0f); break;
       }
       paramChanged = true;
       needsRedraw = true;
@@ -283,8 +281,6 @@ void handleButtons() {
         case 2: upper_hum_threshold += 1; break;
         case 3: lower_hum_threshold += 1; break;
         case 4: timer_value += 1; break;
-        case 5: temp_tolerance = min(10.0f, temp_tolerance + 0.5f); break;
-        case 6: hum_tolerance = min(20.0f, hum_tolerance + 1.0f); break;
       }
       paramChanged = true;
       needsRedraw = true;
@@ -298,8 +294,6 @@ void handleButtons() {
         case 2: showEditScreen("Upper Hum", upper_hum_threshold); break;
         case 3: showEditScreen("Lower Hum", lower_hum_threshold); break;
         case 4: showEditScreen("Timer (min)", timer_value); break;
-        case 5: showEditScreen("Temp Tol(C)", temp_tolerance); break;
-        case 6: showEditScreen("Hum Tol(%)", hum_tolerance); break;
       }
     }
     

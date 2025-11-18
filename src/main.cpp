@@ -17,10 +17,6 @@ float internal_temp = 0, internal_hum = 0, ambient_temp = 0, ambient_hum = 0;
 float upper_temp_threshold = 35, lower_temp_threshold = 25;
 float upper_hum_threshold = 75, lower_hum_threshold = 45;
 
-// Tolerance variables
-float temp_tolerance = 2.0;   // Default: 2°C tolerance
-float hum_tolerance = 5.0;    // Default: 5% tolerance
-
 float lower_temp = 25, lower_hum = 45;
 int mode = 1;
 String priority = "Temperature";
@@ -113,11 +109,12 @@ void setup() {
   
   DEBUG_PRINTLN("\n[BOOT] System ready!");
   DEBUG_PRINTLN("════════════════════════════════");
-  DEBUG_PRINTF("[BOOT] Tolerance: Temp=%.1f°C, Hum=%.0f%%\n", 
-                temp_tolerance, hum_tolerance);
-  DEBUG_PRINTF("[BOOT] Ambient: %.1f°C, %.0f%%\n", 
+  DEBUG_PRINTF("[BOOT] Thresholds: Temp %.1f-%.1f°C, Hum %.0f-%.0f%%\n",
+                lower_temp_threshold, upper_temp_threshold,
+                lower_hum_threshold, upper_hum_threshold);
+  DEBUG_PRINTF("[BOOT] Ambient: %.1f°C, %.0f%%\n",
                 ambient_temp, ambient_hum);
-  DEBUG_PRINTF("[BOOT] Internal: %.1f°C, %.0f%%\n", 
+  DEBUG_PRINTF("[BOOT] Internal: %.1f°C, %.0f%%\n",
                 internal_temp, internal_hum);
   DEBUG_PRINTLN("════════════════════════════════\n");
 }
@@ -151,36 +148,11 @@ void loop() {
   if (currentMillis - lastSensorRead >= 2000) {
     readSensors();
     lastSensorRead = currentMillis;
-    
-    // Calculate actual lower limits based on ambient + tolerance
-    lower_temp = ambient_temp + temp_tolerance;
-    lower_hum = ambient_hum + hum_tolerance;
 
-    // Ensure lower limits don't go below configured thresholds
-    if (lower_temp < lower_temp_threshold) {
-      lower_temp = lower_temp_threshold;
-    }
-    if (lower_hum < lower_hum_threshold) {
-      lower_hum = lower_hum_threshold;
-    }
+    // Use configured thresholds directly (no tolerance calculation)
+    lower_temp = lower_temp_threshold;
+    lower_hum = lower_hum_threshold;
 
-    // CRITICAL: Ensure minimum hysteresis gap to prevent rapid cycling
-    // Lower threshold (turn OFF) must be at least 1°C below upper threshold (turn ON)
-    const float MIN_TEMP_HYSTERESIS = 1.0;  // Minimum 1°C gap
-    const float MIN_HUM_HYSTERESIS = 2.0;   // Minimum 2% gap
-
-    if (lower_temp >= upper_temp_threshold - MIN_TEMP_HYSTERESIS) {
-      lower_temp = upper_temp_threshold - MIN_TEMP_HYSTERESIS;
-      DEBUG_PRINTF("[WARN] Lower temp adjusted to %.1f°C to maintain %.1f°C hysteresis gap\n",
-                   lower_temp, MIN_TEMP_HYSTERESIS);
-    }
-
-    if (lower_hum >= upper_hum_threshold - MIN_HUM_HYSTERESIS) {
-      lower_hum = upper_hum_threshold - MIN_HUM_HYSTERESIS;
-      DEBUG_PRINTF("[WARN] Lower hum adjusted to %.0f%% to maintain %.0f%% hysteresis gap\n",
-                   lower_hum, MIN_HUM_HYSTERESIS);
-    }
-    
     postSensorEvent();
   }
 

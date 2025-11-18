@@ -19,11 +19,7 @@ void loadConfiguration() {
   lower_temp_threshold = storage.getFloat("lowerTemp", DEFAULT_LOWER_TEMP);
   upper_hum_threshold = storage.getFloat("upperHum", DEFAULT_UPPER_HUM);
   lower_hum_threshold = storage.getFloat("lowerHum", DEFAULT_LOWER_HUM);
-  
-  // Load tolerance
-  temp_tolerance = storage.getFloat("tempTol", DEFAULT_TEMP_TOLERANCE);
-  hum_tolerance = storage.getFloat("humTol", DEFAULT_HUM_TOLERANCE);
-  
+
   // Load mode and validate it's enabled
   mode = storage.getInt("mode", DEFAULT_MODE);
   
@@ -98,13 +94,13 @@ void loadConfiguration() {
   }
   
   timer_value = storage.getInt("timerVal", DEFAULT_TIMER_VALUE);
-  
+
   DEBUG_PRINTLN("[STORAGE] Configuration loaded:");
-  DEBUG_PRINTF("  Temp: %.1f - %.1f°C (Tolerance: %.1f°C)\n", 
-                lower_temp_threshold, upper_temp_threshold, temp_tolerance);
-  DEBUG_PRINTF("  Hum: %.0f - %.0f%% (Tolerance: %.0f%%)\n", 
-                lower_hum_threshold, upper_hum_threshold, hum_tolerance);
-  DEBUG_PRINTF("  Mode: %d | Priority: %s | Timer: %d min\n", 
+  DEBUG_PRINTF("  Temp: %.1f - %.1f°C\n",
+                lower_temp_threshold, upper_temp_threshold);
+  DEBUG_PRINTF("  Hum: %.0f - %.0f%%\n",
+                lower_hum_threshold, upper_hum_threshold);
+  DEBUG_PRINTF("  Mode: %d | Priority: %s | Timer: %d min\n",
                 mode, priority.c_str(), timer_value);
 }
 
@@ -113,18 +109,12 @@ void saveConfiguration() {
   storage.putFloat("lowerTemp", lower_temp_threshold);
   storage.putFloat("upperHum", upper_hum_threshold);
   storage.putFloat("lowerHum", lower_hum_threshold);
-  
-  // Save tolerance
-  storage.putFloat("tempTol", temp_tolerance);
-  storage.putFloat("humTol", hum_tolerance);
-  
+
   storage.putInt("mode", mode);
   storage.putString("priority", priority);
   storage.putInt("timerVal", timer_value);
-  
+
   DEBUG_PRINTLN("[STORAGE] Configuration saved.");
-  DEBUG_PRINTF("  Temp Tolerance: %.1f°C | Hum Tolerance: %.0f%%\n", 
-                temp_tolerance, hum_tolerance);
 }
 
 void saveLanguage(const char* lang) {

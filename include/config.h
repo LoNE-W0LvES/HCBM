@@ -92,8 +92,6 @@
 #define DEFAULT_LOWER_TEMP 25.0
 #define DEFAULT_UPPER_HUM 75.0
 #define DEFAULT_LOWER_HUM 45.0
-#define DEFAULT_TEMP_TOLERANCE 2.0
-#define DEFAULT_HUM_TOLERANCE 5.0
 #define DEFAULT_TIMER_VALUE 10
 
 // ============================================
