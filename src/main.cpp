@@ -164,25 +164,22 @@ void loop() {
     const float MIN_TEMP_GAP = 1.5;  // Minimum 1.5°C gap for temperature
     const float MIN_HUM_GAP = 3.0;   // Minimum 3% gap for humidity
 
-    // Upper thresholds stay the same
-    calculated_upper_temp = upper_temp_threshold;
-    calculated_upper_hum = upper_hum_threshold;
+    // CRITICAL: Upper thresholds must be above ambient for cooling to work
+    // If ambient is already high, raise upper threshold to prevent futile operation
+    calculated_upper_temp = max(upper_temp_threshold, ambient_temp + MIN_TEMP_GAP);
+    calculated_upper_hum = max(upper_hum_threshold, ambient_hum + MIN_HUM_GAP);
 
-    // Lower thresholds consider ambient temperature
-    float temp_lower_candidate = max(lower_temp_threshold, ambient_temp);
-    float hum_lower_candidate = max(lower_hum_threshold, ambient_hum);
+    // Lower thresholds = max of configured lower or ambient
+    calculated_lower_temp = max(lower_temp_threshold, ambient_temp);
+    calculated_lower_hum = max(lower_hum_threshold, ambient_hum);
 
-    // Ensure minimum gap is maintained
-    if (calculated_upper_temp - temp_lower_candidate < MIN_TEMP_GAP) {
+    // Ensure minimum gap is ALWAYS maintained
+    if (calculated_upper_temp - calculated_lower_temp < MIN_TEMP_GAP) {
       calculated_lower_temp = calculated_upper_temp - MIN_TEMP_GAP;
-    } else {
-      calculated_lower_temp = temp_lower_candidate;
     }
 
-    if (calculated_upper_hum - hum_lower_candidate < MIN_HUM_GAP) {
+    if (calculated_upper_hum - calculated_lower_hum < MIN_HUM_GAP) {
       calculated_lower_hum = calculated_upper_hum - MIN_HUM_GAP;
-    } else {
-      calculated_lower_hum = hum_lower_candidate;
     }
 
     postSensorEvent();
