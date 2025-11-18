@@ -211,7 +211,8 @@ void updateControl() {
 
   // AUTO MODE – hysteresis control with ambient consideration
   if (mode == 1) {
-    const float MIN_HYSTERESIS_GAP = 1.5;  // Minimum gap to prevent cycling
+    const float MIN_TEMP_GAP = 1.5;  // Minimum 1.5°C gap for temperature
+    const float MIN_HUM_GAP = 3.0;   // Minimum 3% gap for humidity
 
     if (relay_state) {
       // Currently ON: Turn OFF when internal <= MAX(lower_temp, ambient)
@@ -243,7 +244,7 @@ void updateControl() {
         if (priority == "Temperature") {
           // Check if ambient or lower_temp is too close to upper threshold
           float max_lower = max(lower_temp, ambient_temp);
-          bool gapOK = (upper_temp_threshold - max_lower >= MIN_HYSTERESIS_GAP);
+          bool gapOK = (upper_temp_threshold - max_lower >= MIN_TEMP_GAP);
 
           if (!gapOK) {
             DEBUG_PRINTF("[CONTROL] Turn ON blocked - insufficient gap (upper:%.1f°C, max_lower:%.1f°C, gap:%.1f°C)\n",
@@ -253,7 +254,7 @@ void updateControl() {
           relay_on = (internal_temp > upper_temp_threshold) && gapOK;
         } else if (priority == "Humidity") {
           float max_lower = max(lower_hum, ambient_hum);
-          bool gapOK = (upper_hum_threshold - max_lower >= MIN_HYSTERESIS_GAP);
+          bool gapOK = (upper_hum_threshold - max_lower >= MIN_HUM_GAP);
 
           if (!gapOK) {
             DEBUG_PRINTF("[CONTROL] Turn ON blocked - insufficient gap (upper:%.0f%%, max_lower:%.0f%%, gap:%.0f%%)\n",
@@ -264,8 +265,8 @@ void updateControl() {
         } else { // Both
           float max_lower_temp = max(lower_temp, ambient_temp);
           float max_lower_hum = max(lower_hum, ambient_hum);
-          bool gapTempOK = (upper_temp_threshold - max_lower_temp >= MIN_HYSTERESIS_GAP);
-          bool gapHumOK = (upper_hum_threshold - max_lower_hum >= MIN_HYSTERESIS_GAP);
+          bool gapTempOK = (upper_temp_threshold - max_lower_temp >= MIN_TEMP_GAP);
+          bool gapHumOK = (upper_hum_threshold - max_lower_hum >= MIN_HUM_GAP);
 
           bool canTurnOnTemp = (internal_temp > upper_temp_threshold) && gapTempOK;
           bool canTurnOnHum = (internal_hum > upper_hum_threshold) && gapHumOK;
