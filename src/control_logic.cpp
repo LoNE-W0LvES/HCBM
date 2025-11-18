@@ -51,11 +51,14 @@ void setRelayState(bool state, int source) {
     
     // Post event for immediate updates
     postRelayEvent(relay_state, source);
-    
-    // Force immediate display update
-    showRealtimeData();
-    
-    DEBUG_PRINTF("[COOLER] Relay %s (source:%d)\n", 
+
+    // Force immediate display update (only if not in edit mode)
+    extern bool edit_mode;
+    if (!edit_mode) {
+      showRealtimeData();
+    }
+
+    DEBUG_PRINTF("[COOLER] Relay %s (source:%d)\n",
                   relay_state ? "ON" : "OFF", source);
   }
 }

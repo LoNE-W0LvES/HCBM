@@ -155,13 +155,30 @@ void loop() {
     // Calculate actual lower limits based on ambient + tolerance
     lower_temp = ambient_temp + temp_tolerance;
     lower_hum = ambient_hum + hum_tolerance;
-    
+
     // Ensure lower limits don't go below configured thresholds
     if (lower_temp < lower_temp_threshold) {
       lower_temp = lower_temp_threshold;
     }
     if (lower_hum < lower_hum_threshold) {
       lower_hum = lower_hum_threshold;
+    }
+
+    // CRITICAL: Ensure minimum hysteresis gap to prevent rapid cycling
+    // Lower threshold (turn OFF) must be at least 1°C below upper threshold (turn ON)
+    const float MIN_TEMP_HYSTERESIS = 1.0;  // Minimum 1°C gap
+    const float MIN_HUM_HYSTERESIS = 2.0;   // Minimum 2% gap
+
+    if (lower_temp >= upper_temp_threshold - MIN_TEMP_HYSTERESIS) {
+      lower_temp = upper_temp_threshold - MIN_TEMP_HYSTERESIS;
+      DEBUG_PRINTF("[WARN] Lower temp adjusted to %.1f°C to maintain %.1f°C hysteresis gap\n",
+                   lower_temp, MIN_TEMP_HYSTERESIS);
+    }
+
+    if (lower_hum >= upper_hum_threshold - MIN_HUM_HYSTERESIS) {
+      lower_hum = upper_hum_threshold - MIN_HUM_HYSTERESIS;
+      DEBUG_PRINTF("[WARN] Lower hum adjusted to %.0f%% to maintain %.0f%% hysteresis gap\n",
+                   lower_hum, MIN_HUM_HYSTERESIS);
     }
     
     postSensorEvent();
