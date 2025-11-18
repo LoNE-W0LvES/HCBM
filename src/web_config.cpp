@@ -55,6 +55,10 @@ void sendDataUpdate() {
   doc["lower_temp_threshold"] = lower_temp_threshold;
   doc["upper_hum_threshold"]  = upper_hum_threshold;
   doc["lower_hum_threshold"]  = lower_hum_threshold;
+  doc["calculated_upper_temp"] = calculated_upper_temp;
+  doc["calculated_lower_temp"] = calculated_lower_temp;
+  doc["calculated_upper_hum"]  = calculated_upper_hum;
+  doc["calculated_lower_hum"]  = calculated_lower_hum;
   doc["protection_active"]    = isProtectionActive();
   doc["protection_remaining"] = getProtectionRemaining();
   
@@ -247,6 +251,10 @@ void startWebServer() {
     doc["lower_temp_threshold"] = lower_temp_threshold;
     doc["upper_hum_threshold"]  = upper_hum_threshold;
     doc["lower_hum_threshold"]  = lower_hum_threshold;
+    doc["calculated_upper_temp"] = calculated_upper_temp;
+    doc["calculated_lower_temp"] = calculated_lower_temp;
+    doc["calculated_upper_hum"]  = calculated_upper_hum;
+    doc["calculated_lower_hum"]  = calculated_lower_hum;
     doc["protection_active"]    = isProtectionActive();
     doc["protection_remaining"] = getProtectionRemaining();
     
