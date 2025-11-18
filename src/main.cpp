@@ -182,6 +182,11 @@ void loop() {
       calculated_lower_hum = calculated_upper_hum - MIN_HUM_GAP;
     }
 
+    DEBUG_PRINTF("[CALC] Amb:%.1fC/%.0f%% → CalcUpper:%.1fC/%.0f%% CalcLower:%.1fC/%.0f%%\n",
+                 ambient_temp, ambient_hum,
+                 calculated_upper_temp, calculated_upper_hum,
+                 calculated_lower_temp, calculated_lower_hum);
+
     postSensorEvent();
   }
 

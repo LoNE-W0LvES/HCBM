@@ -260,8 +260,8 @@ void updateDisplayIfNeeded() {
     }
   }
   
-  // Update display if forced or periodic interval reached
-  if (forceUpdate || (millis() - lastUpdate > 1500 && !edit_mode)) {
+  // Update display if forced or periodic interval reached (but not in edit mode)
+  if (!edit_mode && (forceUpdate || millis() - lastUpdate > 1500)) {
     showRealtimeData();
     forceUpdate = false;
   }
