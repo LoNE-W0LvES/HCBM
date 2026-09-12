@@ -29,7 +29,7 @@ void initDisplay() {
   }
 
   // Flip the display (rotate 180 degrees)
-  display.setRotation(2);
+  // display.setRotation(0);
 
   display.clearDisplay();
   display.setTextColor(SSD1306_WHITE);

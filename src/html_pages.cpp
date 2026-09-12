@@ -555,6 +555,14 @@ body {
   display: block;
   text-align: center;
 }
+.btn-calibrate {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: white;
+}
+.btn-danger {
+  background: linear-gradient(135deg, #f5576c 0%, #d63447 100%);
+  color: white;
+}
 .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
@@ -642,6 +650,56 @@ body {
         </div>
       </div>
 
+      <div class="section">
+        <h3 id="calibrateTitle">Sensor Calibration</h3>
+
+        <!-- Auto Calibration -->
+        <div style="margin-bottom: 20px; padding: 15px; background: #f5f7fa; border-radius: 8px;">
+          <p id="calibrateDesc" style="font-size: 13px; color: #666; margin-bottom: 15px;">
+            Place both sensors next to each other and click to auto-calibrate.
+          </p>
+          <button type="button" class="btn btn-calibrate" id="btnCalibrate" onclick="calibrateSensors()">
+            🔧 <span id="btnCalibrateText">Auto Calibrate</span>
+          </button>
+          <div class="alert success" id="calibrateAlert" style="display: none; margin-top: 15px;">
+            <div id="calibrateResult"></div>
+          </div>
+        </div>
+
+        <!-- Manual Calibration -->
+        <div style="margin-bottom: 20px; padding: 15px; background: #f5f7fa; border-radius: 8px;">
+          <p id="manualCalibDesc" style="font-size: 13px; color: #666; margin-bottom: 15px;">
+            Or manually set calibration offsets:
+          </p>
+          <div class="form-row">
+            <div class="form-group">
+              <label id="lblTempOffset">Temperature Offset (°C)</label>
+              <input type="number" step="0.1" id="manualTempOffset" placeholder="e.g., -1.7">
+            </div>
+            <div class="form-group">
+              <label id="lblHumOffset">Humidity Offset (%)</label>
+              <input type="number" step="0.1" id="manualHumOffset" placeholder="e.g., -14.0">
+            </div>
+          </div>
+          <button type="button" class="btn btn-save" id="btnSetOffsets" onclick="setOffsets()" style="margin-top: 10px;">
+            ✓ <span id="btnSetOffsetsText">Apply Offsets</span>
+          </button>
+          <div class="alert success" id="setOffsetsAlert" style="display: none; margin-top: 15px;">
+            <span id="setOffsetsResult">✔ Offsets applied!</span>
+          </div>
+        </div>
+
+        <!-- Reset Calibration -->
+        <div style="padding: 15px; background: #ffe5e5; border-radius: 8px;">
+          <p id="resetCalibDesc" style="font-size: 13px; color: #666; margin-bottom: 15px;">
+            Reset calibration to defaults (remove all offsets):
+          </p>
+          <button type="button" class="btn btn-danger" id="btnResetCalibrate" onclick="resetCalibration()">
+            🔄 <span id="btnResetCalibrateText">Reset Calibration</span>
+          </button>
+        </div>
+      </div>
+
       <button type="submit" class="btn btn-save" id="btnSave">💾 Save Configuration</button>
       <div class="alert success" id="successAlert">
         <span id="successMsg">✔ Configuration saved successfully!</span>
@@ -666,6 +724,15 @@ const translations = {
     lblLowerHum: 'Lower Humidity (%)',
     timerTitle: 'Timer Settings',
     lblTimerMin: 'Timer Interval (minutes)',
+    calibrateTitle: 'Sensor Calibration',
+    calibrateDesc: 'Place both sensors next to each other and click to auto-calibrate.',
+    btnCalibrateText: 'Auto Calibrate',
+    manualCalibDesc: 'Or manually set calibration offsets:',
+    lblTempOffset: 'Temperature Offset (°C)',
+    lblHumOffset: 'Humidity Offset (%)',
+    btnSetOffsetsText: 'Apply Offsets',
+    resetCalibDesc: 'Reset calibration to defaults (remove all offsets):',
+    btnResetCalibrateText: 'Reset Calibration',
     btnSave: '💾 Save Configuration',
     btnBack: '← Back to Dashboard',
     successMsg: '✔ Configuration saved successfully!'
@@ -681,6 +748,15 @@ const translations = {
     lblLowerHum: 'নিম্ন আর্দ্রতা (%)',
     timerTitle: 'টাইমার সেটিংস',
     lblTimerMin: 'টাইমার ব্যবধান (মিনিট)',
+    calibrateTitle: 'সেন্সর ক্যালিব্রেশন',
+    calibrateDesc: 'উভয় সেন্সর একসাথে রাখুন এবং স্বয়ংক্রিয় ক্যালিব্রেশনের জন্য ক্লিক করুন।',
+    btnCalibrateText: 'স্বয়ংক্রিয় ক্যালিব্রেট',
+    manualCalibDesc: 'অথবা ম্যানুয়ালি ক্যালিব্রেশন অফসেট সেট করুন:',
+    lblTempOffset: 'তাপমাত্রা অফসেট (°সে)',
+    lblHumOffset: 'আর্দ্রতা অফসেট (%)',
+    btnSetOffsetsText: 'অফসেট প্রয়োগ করুন',
+    resetCalibDesc: 'ক্যালিব্রেশন ডিফল্টে রিসেট করুন (সমস্ত অফসেট সরান):',
+    btnResetCalibrateText: 'ক্যালিব্রেশন রিসেট করুন',
     btnSave: '💾 কনফিগারেশন সংরক্ষণ',
     btnBack: '← ড্যাশবোর্ডে ফিরুন',
     successMsg: '✔ কনফিগারেশন সফলভাবে সংরক্ষিত!'
@@ -704,7 +780,7 @@ async function loadConfig() {
   try {
     const res = await fetch('/data');
     const d = await res.json();
-    
+
     document.getElementById('upperT').value = d.upper_temp_threshold;
     document.getElementById('lowerT').value = d.lower_temp_threshold;
     document.getElementById('upperH').value = d.upper_hum_threshold;
@@ -712,6 +788,110 @@ async function loadConfig() {
     document.getElementById('timerCfg').value = d.timer_value;
   } catch(e) {
     console.error('Load error:', e);
+  }
+}
+
+async function calibrateSensors() {
+  const btn = document.getElementById('btnCalibrate');
+  const alert = document.getElementById('calibrateAlert');
+  const result = document.getElementById('calibrateResult');
+
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+
+  try {
+    const res = await fetch('/calibrate');
+    const data = await res.json();
+
+    if (data.success) {
+      const msg = `<strong>✔ Calibration Complete!</strong><br><br>` +
+        `<strong>Ambient:</strong> ${data.ambient_temp.toFixed(2)}°C, ${data.ambient_hum.toFixed(2)}%<br>` +
+        `<strong>Internal:</strong> ${data.internal_temp.toFixed(2)}°C, ${data.internal_hum.toFixed(2)}%<br><br>` +
+        `<strong>Applied Offsets:</strong><br>` +
+        `Temperature: ${data.offset_temp > 0 ? '+' : ''}${data.offset_temp.toFixed(2)}°C<br>` +
+        `Humidity: ${data.offset_hum > 0 ? '+' : ''}${data.offset_hum.toFixed(2)}%`;
+
+      result.innerHTML = msg;
+      alert.style.display = 'block';
+      alert.style.backgroundColor = '#43e97b';
+      setTimeout(() => alert.style.display = 'none', 5000);
+    } else {
+      result.innerHTML = '✗ Calibration failed: ' + (data.error || 'Unknown error');
+      alert.style.backgroundColor = '#f5576c';
+      alert.style.display = 'block';
+    }
+  } catch(e) {
+    result.innerHTML = '✗ Error: ' + e.message;
+    alert.style.backgroundColor = '#f5576c';
+    alert.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+}
+
+async function setOffsets() {
+  const tempOffset = parseFloat(document.getElementById('manualTempOffset').value);
+  const humOffset = parseFloat(document.getElementById('manualHumOffset').value);
+
+  if (isNaN(tempOffset) || isNaN(humOffset)) {
+    alert('Please enter valid numbers for both offsets');
+    return;
+  }
+
+  const btn = document.getElementById('btnSetOffsets');
+  const alert = document.getElementById('setOffsetsAlert');
+  const result = document.getElementById('setOffsetsResult');
+
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+
+  try {
+    const res = await fetch(`/setoffsets?temp=${tempOffset}&hum=${humOffset}`);
+    const data = await res.json();
+
+    if (data.success) {
+      result.innerHTML = `✔ Offsets applied!<br>Temperature: ${tempOffset}°C<br>Humidity: ${humOffset}%`;
+      alert.style.display = 'block';
+      alert.style.backgroundColor = '#43e97b';
+      setTimeout(() => alert.style.display = 'none', 3000);
+    } else {
+      result.innerHTML = '✗ Failed to apply offsets';
+      alert.style.backgroundColor = '#f5576c';
+      alert.style.display = 'block';
+    }
+  } catch(e) {
+    result.innerHTML = '✗ Error: ' + e.message;
+    alert.style.backgroundColor = '#f5576c';
+    alert.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+}
+
+async function resetCalibration() {
+  if (!confirm('Are you sure you want to reset all calibration offsets to 0?')) {
+    return;
+  }
+
+  try {
+    const res = await fetch('/resetcalibrate');
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('manualTempOffset').value = '';
+      document.getElementById('manualHumOffset').value = '';
+
+      const alert = document.getElementById('setOffsetsAlert');
+      const result = document.getElementById('setOffsetsResult');
+      result.innerHTML = '✔ Calibration reset to defaults (offsets = 0)';
+      alert.style.display = 'block';
+      alert.style.backgroundColor = '#43e97b';
+      setTimeout(() => alert.style.display = 'none', 3000);
+    }
+  } catch(e) {
+    alert('Error resetting calibration: ' + e.message);
   }
 }
 

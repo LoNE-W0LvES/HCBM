@@ -6,6 +6,7 @@
 #include "wifi_manager.h"
 #include "events.h"
 #include "control_logic.h"
+#include "sensor_read.h"
 #include "config.h"
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
@@ -393,6 +394,44 @@ void startWebServer() {
     DEBUG_PRINTF("  Timer: %d min\n", timer_value);
     
     req->send(200, "text/plain", "Saved");
+  });
+
+  // ============================================
+  // Sensor Calibration
+  // ============================================
+  server.on("/calibrate", HTTP_GET, [](AsyncWebServerRequest *req){
+    DEBUG_PRINTLN("[WEB] Calibration requested - sensors must be next to each other");
+    String result = autoCalibrateInternalSensor();
+    req->send(200, "application/json", result);
+  });
+
+  // ============================================
+  // Manual Offset Setting
+  // ============================================
+  server.on("/setoffsets", HTTP_GET, [](AsyncWebServerRequest *req){
+    if(req->hasParam("temp") && req->hasParam("hum")){
+      float tempOffset = req->getParam("temp")->value().toFloat();
+      float humOffset = req->getParam("hum")->value().toFloat();
+
+      setSensorOffsets(tempOffset, humOffset);
+      saveConfiguration();
+
+      DEBUG_PRINTF("[WEB] Manual offsets set: Temp %+.2f°C, Hum %+.2f%%\n", tempOffset, humOffset);
+      req->send(200, "application/json", "{\"success\":true}");
+    } else {
+      req->send(400, "application/json", "{\"success\":false,\"error\":\"Missing parameters\"}");
+    }
+  });
+
+  // ============================================
+  // Reset Calibration
+  // ============================================
+  server.on("/resetcalibrate", HTTP_GET, [](AsyncWebServerRequest *req){
+    setSensorOffsets(0.0, 0.0);
+    saveConfiguration();
+
+    DEBUG_PRINTLN("[WEB] Calibration reset to defaults (offsets = 0)");
+    req->send(200, "application/json", "{\"success\":true}");
   });
 
   server.begin();

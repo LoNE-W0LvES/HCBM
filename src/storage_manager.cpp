@@ -95,6 +95,10 @@ void loadConfiguration() {
   
   timer_value = storage.getInt("timerVal", DEFAULT_TIMER_VALUE);
 
+  // Load sensor calibration offsets
+  internal_temp_offset = storage.getFloat("tempOffset", 0.0);
+  internal_hum_offset = storage.getFloat("humOffset", 0.0);
+
   DEBUG_PRINTLN("[STORAGE] Configuration loaded:");
   DEBUG_PRINTF("  Temp: %.1f - %.1f°C\n",
                 lower_temp_threshold, upper_temp_threshold);
@@ -113,6 +117,10 @@ void saveConfiguration() {
   storage.putInt("mode", mode);
   storage.putString("priority", priority);
   storage.putInt("timerVal", timer_value);
+
+  // Save sensor calibration offsets
+  storage.putFloat("tempOffset", internal_temp_offset);
+  storage.putFloat("humOffset", internal_hum_offset);
 
   DEBUG_PRINTLN("[STORAGE] Configuration saved.");
 }

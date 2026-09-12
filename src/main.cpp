@@ -34,6 +34,10 @@ bool relay_state = false;
 int current_menu = 1;
 bool edit_mode = false;
 
+// Sensor calibration offsets (can be adjusted via web config)
+float internal_temp_offset = 0.0;   // Will subtract this from AM2315C temp
+float internal_hum_offset = 0.0;    // Will subtract this from AM2315C humidity
+
 unsigned long lastLog = 0;
 unsigned long lastSensorRead = 0;
 unsigned long lastPerfLog = 0;

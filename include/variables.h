@@ -29,6 +29,10 @@ extern String priority;       // "Temperature" or "Humidity"
 extern int timer_value;       // minutes
 extern bool timer_active;
 
+// Sensor calibration offsets
+extern float internal_temp_offset;    // Temperature offset for AM2315C
+extern float internal_hum_offset;     // Humidity offset for AM2315C
+
 // States
 extern bool switch_manual;    // manual relay toggle
 extern bool relay_state;      // current relay state
