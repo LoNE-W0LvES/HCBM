@@ -33,27 +33,27 @@
 ```mermaid
 graph TD
     subgraph Sensors ["Dual-Zone Environmental Sensing"]
-        AHT[Ambient Sensor: AHT21<br/>Addr: 0x38 | Bus: Wire]
-        AM[Internal Sensor: AM2315C<br/>Addr: 0x38 | Bus: TwoWire-1]
+        AHT["Ambient Sensor: AHT21<br/>(Addr: 0x38, Bus: Wire)"]
+        AM["Internal Sensor: AM2315C<br/>(Addr: 0x38, Bus: TwoWire-1)"]
     end
 
     subgraph ESP32 ["ESP32-S3 Core Controller"]
-        EventQueue[FreeRTOS Mutex Event Queue]
-        ControlEngine[Adaptive Control & Hysteresis Engine]
-        CompProtect[Compressor & Ineffective Cooling Guard]
-        NVS[Preferences NVS Flash Storage]
-        WebEngine[AsyncWebServer + WebSocket Server]
+        EventQueue["FreeRTOS Mutex Event Queue"]
+        ControlEngine["Adaptive Control & Hysteresis Engine"]
+        CompProtect["Compressor & Ineffective Cooling Guard"]
+        NVS["Preferences NVS Flash Storage"]
+        WebEngine["AsyncWebServer + WebSocket Server"]
     end
 
     subgraph Interfaces ["Physical & Network Interfaces"]
-        OLED[0.96 inch SSD1306 OLED<br/>I2C Address: 0x3C]
-        Buttons[5 Physical Push Buttons<br/>Debounced Input Pullups]
-        Relay[Cooler / Compressor Relay Switch]
-        WebUI[Responsive Web Dashboard<br/>Bilingual: English / Bengali]
+        OLED["0.96 inch SSD1306 OLED<br/>(I2C Address: 0x3C)"]
+        Buttons["5 Physical Push Buttons<br/>(Debounced Input Pullups)"]
+        Relay["Cooler / Compressor Relay Switch"]
+        WebUI["Responsive Web Dashboard<br/>(Bilingual: English / Bengali)"]
     end
 
-    AHT -->|I2C Shared| ESP32
-    AM -->|I2C Dedicated| ESP32
+    AHT -->|"I2C Shared"| ControlEngine
+    AM -->|"I2C Dedicated"| ControlEngine
     Buttons --> EventQueue
     EventQueue --> ControlEngine
     ControlEngine --> CompProtect
